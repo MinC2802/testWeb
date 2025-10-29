@@ -1,4 +1,405 @@
-<html>
-  <h1>test with index</h1>
-  <p> lorem ipsum dolor sum </p>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Liquid Glass — Spin the Wheel</title>
+  <style>
+    /* ---------- Reset & base ---------- */
+    :root{
+      --bg1: linear-gradient(135deg,#0f172a 0%, #06202b 100%);
+      --glass-bg: rgba(255,255,255,0.06);
+      --glass-border: rgba(255,255,255,0.14);
+      --accent: #6ee7b7; /* mint */
+      --accent-2: #60a5fa; /* blue */
+      --glass-radius: 22px;
+      --shadow: 0 10px 30px rgba(2,6,23,0.6);
+      --text: rgba(255,255,255,0.92);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    * {box-sizing: border-box}
+    html,body{height:100%;}
+    body{
+      margin:0;
+      background: var(--bg1);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      display:flex;align-items:center;justify-content:center;
+      padding:32px;
+    }
+
+    /* ---------- Layout ---------- */
+    .stage{
+      width:min(980px,95vw);
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:24px;
+      align-items:center;
+    }
+
+    /* ---------- Liquid glass card ---------- */
+    .card{
+      position:relative;
+      padding:28px;
+      border-radius:var(--glass-radius);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(8px) saturate(120%);
+      box-shadow:var(--shadow);
+      overflow:visible;
+    }
+
+    h1{margin:0 0 12px 0;font-size:20px;letter-spacing:-0.02em}
+    p.lead{margin:0 0 18px 0;opacity:0.9}
+
+    /* ---------- Wheel container ---------- */
+    .wheel-wrap{
+      display:flex;align-items:center;justify-content:center;position:relative;padding:18px;
+    }
+
+    .wheel{
+      width:420px;height:420px;border-radius:50%;position:relative;overflow:visible;
+      display:grid;place-items:center;transform:translateZ(0);
+    }
+
+    /* use an SVG as wheel; attach a sheen overlay */
+    .pointer{
+      position:absolute;top:50%;left:50%;transform:translate(-50%,-210%);
+      width:48px;height:96px;pointer-events:none;z-index:40;filter:drop-shadow(0 8px 12px rgba(2,6,23,0.6));
+    }
+
+    /* glossy sheen */
+    .sheen{
+      position:absolute;inset:0;border-radius:50%;pointer-events:none;mix-blend-mode:overlay;opacity:0.6;
+      background: radial-gradient(80% 60% at 15% 10%, rgba(255,255,255,0.28), transparent 20%),
+                  linear-gradient(180deg, rgba(255,255,255,0.06), transparent 40%);
+      z-index:30;backdrop-filter: blur(2px);
+    }
+
+    /* center button */
+    .center-btn{
+      position:relative;z-index:35;width:120px;height:120px;border-radius:999px;display:flex;align-items:center;justify-content:center;
+      cursor:pointer;border:1px solid rgba(255,255,255,0.16);background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+      box-shadow: 0 6px 14px rgba(2,6,23,0.55), inset 0 1px 0 rgba(255,255,255,0.03);
+      transition:transform .12s ease;
+      font-weight:700;font-size:14px;letter-spacing:0.02em;color:var(--text);
+    }
+    .center-btn:active{transform:scale(.98)}
+
+    /* sidebar */
+    .sidebar{display:flex;flex-direction:column;gap:14px}
+    .stats{display:flex;gap:12px;flex-wrap:wrap}
+    .stat{padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));border:1px solid rgba(255,255,255,0.05);min-width:120px}
+
+    /* buttons */
+    .controls{display:flex;gap:8px}
+    button.btn{padding:10px 14px;border-radius:12px;border:none;background:transparent;color:var(--text);cursor:pointer;border:1px solid rgba(255,255,255,0.08);backdrop-filter: blur(6px)}
+    button.primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#04203a;border:none}
+
+    /* winners list */
+    .winners{max-height:220px;overflow:auto;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.04)}
+    .winner-item{font-size:14px;padding:6px 8px;border-radius:8px;margin-bottom:6px;background:linear-gradient(180deg, rgba(255,255,255,0.012), transparent);}
+
+    /* responsive */
+    @media (max-width:880px){
+      .stage{grid-template-columns:1fr;}
+      .wheel{width:320px;height:320px}
+    }
+
+    /* ---------- Wheel segment labels ---------- */
+    .label{font-size:12px;font-weight:700;text-transform:uppercase}
+
+    /* ---------- subtle wobble animation for liquid feel ---------- */
+    @keyframes wobble {
+      0%{transform:rotate(0)}
+      25%{transform:rotate(0.6deg)}
+      50%{transform:rotate(-0.6deg)}
+      75%{transform:rotate(0.4deg)}
+      100%{transform:rotate(0)}
+    }
+    .wheel-container{display:inline-block;animation:wobble 6s ease-in-out infinite}
+
+    /* confetti canvas full-screen */
+    #confetti{position:fixed;inset:0;pointer-events:none;z-index:80}
+
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="card">
+      <h1>Liquid-Glass Spin the Wheel</h1>
+      <p class="lead">A glossy, liquid-glass styled spin-the-wheel. Click the center to spin. Keyboard: press Space.</p>
+
+      <div class="wheel-wrap">
+        <div class="wheel-container card" aria-hidden="false">
+          <div class="wheel" id="wheel">
+            <!-- SVG wheel drawn via JS for crisp edges + gradients -->
+            <svg id="wheel-svg" viewBox="0 0 500 500" width="100%" height="100%" aria-hidden="true"></svg>
+            <div class="sheen"></div>
+            <button class="center-btn" id="spinBtn" aria-label="Spin the wheel" title="Spin the wheel">SPIN</button>
+          </div>
+          <img class="pointer" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='96'><defs><linearGradient id='g' x1='0' x2='0' y1='0' y2='1'><stop offset='0' stop-color='%23fff' stop-opacity='0.95'/><stop offset='1' stop-color='%23d1e9ff' stop-opacity='0.06'/></linearGradient></defs><path d='M24 0 L40 36 L24 28 L8 36 Z' fill='url(%23g)' stroke='%23081a2b' stroke-opacity='0.12' stroke-width='1'/></svg>" alt="pointer"/>
+        </div>
+      </div>
+
+      <canvas id="confetti"></canvas>
+    </div>
+
+    <aside class="sidebar">
+      <div class="card">
+        <h3 style="margin:0 0 10px 0">Controls</h3>
+        <div class="controls">
+          <button class="btn" id="quickSpin">Quick</button>
+          <button class="btn" id="slowSpin">Dramatic</button>
+          <button class="btn" id="reset">Reset</button>
+        </div>
+        <div style="height:12px"></div>
+        <div class="stats">
+          <div class="stat">Spins: <span id="spinCount">0</span></div>
+          <div class="stat">Last: <span id="lastPrize">—</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 10px 0">Winners</h3>
+        <div class="winners" id="winnersList" aria-live="polite"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 10px 0">Customize</h3>
+        <p style="margin:0 0 8px 0;font-size:13px;opacity:0.9">Edit the JS section labeled <code>// PRIZES</code> to change segments and colors.</p>
+        <button class="primary" id="exportPNG">Export PNG</button>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    /* ---------- Data: PRIZES ---------- */
+    const PRIZES = [
+      {label: 'Free Coffee', color:'#0ea5a4'},
+      {label: '10% Off', color:'#60a5fa'},
+      {label: 'Try Again', color:'#f97316'},
+      {label: 'Free Ship', color:'#8b5cf6'},
+      {label: 'Grand Prize', color:'#f43f5e'},
+      {label: 'Gift Card', color:'#34d399'},
+      {label: 'No Prize', color:'#94a3b8'},
+      {label: 'Free Snack', color:'#f59e0b'}
+    ];
+
+    /* ---------- Setup svg wheel ---------- */
+    const svg = document.getElementById('wheel-svg');
+    const size = 500;
+    svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
+
+    function drawWheel() {
+      svg.innerHTML = '';
+      const center = size/2;
+      const radius = center - 6;
+      const total = PRIZES.length;
+      const angle = 360/total;
+
+      // create defs for stroke and small inner circle
+      const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+      svg.appendChild(defs);
+
+      for (let i=0;i<total;i++){
+        const start = (i*angle-90);
+        const end = ((i+1)*angle-90);
+        const largeArc = angle>180?1:0;
+
+        // path using arc
+        const x1 = center + radius*Math.cos(start*Math.PI/180);
+        const y1 = center + radius*Math.sin(start*Math.PI/180);
+        const x2 = center + radius*Math.cos(end*Math.PI/180);
+        const y2 = center + radius*Math.sin(end*Math.PI/180);
+        const d = `M ${center} ${center} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+        path.setAttribute('d',d);
+        path.setAttribute('fill', PRIZES[i].color);
+        path.setAttribute('stroke', 'rgba(255,255,255,0.06)');
+        path.setAttribute('stroke-width','1');
+        svg.appendChild(path);
+
+        // label
+        const midAng = (start+end)/2;
+        const labelRadius = radius*0.65;
+        const lx = center + labelRadius*Math.cos(midAng*Math.PI/180);
+        const ly = center + labelRadius*Math.sin(midAng*Math.PI/180);
+
+        const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+        txt.setAttribute('x', lx);
+        txt.setAttribute('y', ly);
+        txt.setAttribute('fill', 'rgba(255,255,255,0.94)');
+        txt.setAttribute('font-size', '14');
+        txt.setAttribute('font-weight','700');
+        txt.setAttribute('text-anchor','middle');
+        txt.setAttribute('dominant-baseline','middle');
+        txt.setAttribute('transform', `rotate(${midAng} ${lx} ${ly})`);
+        txt.textContent = PRIZES[i].label;
+        svg.appendChild(txt);
+      }
+
+      // outer glossy ring
+      const ring = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      ring.setAttribute('cx',center);
+      ring.setAttribute('cy',center);
+      ring.setAttribute('r', radius+4);
+      ring.setAttribute('fill','none');
+      ring.setAttribute('stroke','rgba(255,255,255,0.06)');
+      ring.setAttribute('stroke-width','4');
+      svg.appendChild(ring);
+
+      // small inner circle
+      const inner = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      inner.setAttribute('cx',center);inner.setAttribute('cy',center);inner.setAttribute('r',radius*0.22);
+      inner.setAttribute('fill','rgba(2,6,23,0.6)');inner.setAttribute('stroke','rgba(255,255,255,0.04)');
+      svg.appendChild(inner);
+    }
+
+    drawWheel();
+
+    /* ---------- Spin logic ---------- */
+    const wheelEl = document.getElementById('wheel-svg');
+    const spinBtn = document.getElementById('spinBtn');
+    const confettiCanvas = document.getElementById('confetti');
+    const winnersList = document.getElementById('winnersList');
+    const spinCountEl = document.getElementById('spinCount');
+    const lastPrizeEl = document.getElementById('lastPrize');
+
+    let isSpinning=false;
+    let totalSpins=0;
+    let rotation = 0; // degrees
+
+    function randomPrizeIndex(){
+      return Math.floor(Math.random()*PRIZES.length);
+    }
+
+    function spin({type='normal'}={}){
+      if (isSpinning) return;
+      isSpinning=true;
+      const idx = randomPrizeIndex();
+      const segAngle = 360/PRIZES.length;
+      // target so that the chosen segment lands at pointer (top -90 deg)
+      const targetDeg = (idx*segAngle) + (segAngle/2);
+
+      // make it spin many rounds + land
+      const rounds = type==='slow'? 8 + Math.floor(Math.random()*3) : 4 + Math.floor(Math.random()*3);
+      const final = 360*rounds + (360 - targetDeg) + (Math.random()*segAngle - segAngle/2);
+
+      const duration = type==='slow'? 7000 : 3800;
+
+      // animate using requestAnimationFrame with easing
+      const start = performance.now();
+      const from = rotation%360;
+      const to = rotation + final;
+
+      function easeOutCubic(t){return 1 - Math.pow(1-t,3)}
+
+      function frame(now){
+        const elapsed = now - start;
+        const t = Math.min(1, elapsed/duration);
+        const eased = easeOutCubic(t);
+        const curr = from + (to-from)*eased;
+        wheelEl.style.transform = `rotate(${curr}deg)`;
+
+        if (t<1){
+          requestAnimationFrame(frame);
+        } else {
+          rotation = to%360;
+          isSpinning=false;
+          const landed = PRIZES[(PRIZES.length - Math.floor((rotation+segAngle/2)/segAngle))%PRIZES.length];
+          announceWinner(landed);
+          burstConfetti();
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function announceWinner(prize){
+      totalSpins++;
+      spinCountEl.textContent = totalSpins;
+      lastPrizeEl.textContent = prize.label;
+      const item = document.createElement('div');
+      item.className='winner-item';
+      item.textContent = `${new Date().toLocaleTimeString()} — ${prize.label}`;
+      winnersList.prepend(item);
+    }
+
+    spinBtn.addEventListener('click',()=>spin({type:'normal'}));
+    document.getElementById('quickSpin').addEventListener('click',()=>spin({type:'normal'}));
+    document.getElementById('slowSpin').addEventListener('click',()=>spin({type:'slow'}));
+    document.getElementById('reset').addEventListener('click',()=>{
+      rotation=0;wheelEl.style.transform='rotate(0deg)';spinCountEl.textContent='0';lastPrizeEl.textContent='—';winnersList.innerHTML='';totalSpins=0;
+    });
+
+    // keyboard: space to spin
+    window.addEventListener('keydown',(e)=>{if (e.code==='Space'){e.preventDefault(); spin({type:'normal'})}});
+
+    /* ---------- Confetti (simple) ---------- */
+    const cw = confettiCanvas;
+    const ctx = cw.getContext('2d');
+    function resizeConfetti(){cw.width=innerWidth;cw.height=innerHeight}
+    resizeConfetti();window.addEventListener('resize',resizeConfetti);
+
+    function burstConfetti(){
+      const pieces=[];
+      for (let i=0;i<80;i++){
+        pieces.push({
+          x: innerWidth/2 + (Math.random()-0.5)*200,
+          y: innerHeight/2 - 80 + (Math.random()-0.5)*120,
+          vx: (Math.random()-0.5)*8,
+          vy: -Math.random()*8 -2,
+          r: 6+Math.random()*6,
+          color: PRIZES[Math.floor(Math.random()*PRIZES.length)].color,
+          life:200 + Math.random()*300
+        })
+      }
+      let last = performance.now();
+      function step(now){
+        const dt = now-last; last=now;
+        ctx.clearRect(0,0,cw.width,cw.height);
+        for (let p of pieces){
+          p.vy += 0.18; p.x += p.vx; p.y += p.vy; p.life -= dt;
+          ctx.beginPath(); ctx.fillStyle = p.color; ctx.ellipse(p.x,p.y,p.r,p.r,0,0,Math.PI*2); ctx.fill();
+        }
+        if (pieces.some(p=>p.life>0)) requestAnimationFrame(step);
+        else ctx.clearRect(0,0,cw.width,cw.height);
+      }
+      requestAnimationFrame(step);
+    }
+
+    /* ---------- Export PNG of wheel ---------- */
+    document.getElementById('exportPNG').addEventListener('click',()=>{
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const canvas = document.createElement('canvas');
+      canvas.width = 1000; canvas.height = 1000;
+      const image = new Image();
+      image.onload = ()=>{
+        const c = canvas.getContext('2d');
+        // background
+        c.fillStyle = '#071022'; c.fillRect(0,0,canvas.width,canvas.height);
+        c.drawImage(image,0,0,canvas.width,canvas.height);
+        const url = canvas.toDataURL('image/png');
+        const a = document.createElement('a'); a.href = url; a.download = 'spin-wheel.png'; a.click();
+      };
+      image.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(svgData);
+    });
+
+    /* ---------- Accessibility: announce via ARIA live when winner ---------- */
+    const live = document.createElement('div'); live.setAttribute('aria-live','polite'); live.style.position='absolute'; live.style.left='-9999px'; document.body.appendChild(live);
+    function announce(text){ live.textContent=text }
+    function announceWinner(prize){
+      totalSpins++;
+      spinCountEl.textContent = totalSpins;
+      lastPrizeEl.textContent = prize.label;
+      const item = document.createElement('div');
+      item.className='winner-item';
+      item.textContent = `${new Date().toLocaleTimeString()} — ${prize.label}`;
+      winnersList.prepend(item);
+      announce(`You won ${prize.label}`);
+    }
+
+  </script>
+</body>
 </html>
