@@ -1,302 +1,265 @@
+<!-- ==========================
+index.html
+========================== -->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Our Story — Liquid Glass Album</title>
-  <style>
-    :root{
-      --bg1: radial-gradient(1200px 600px at 10% 10%, #0b1220 0%, transparent 20%), radial-gradient(900px 600px at 90% 90%, #071026 0%, transparent 12%), linear-gradient(180deg,#031024 0%,#07121a 100%);
-      --glass: rgba(255,255,255,0.06);
-      --glass-2: rgba(255,255,255,0.04);
-      --accent: #ff7ab6; /* pink */
-      --accent-2: #7bd3ff; /* cyan */
-      --text: rgba(255,255,255,0.96);
-      --muted: rgba(255,255,255,0.7);
-      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0}
-    body{
-      background: var(--bg1);
-      color:var(--text);
-      -webkit-font-smoothing:antialiased;
-      display:flex;align-items:center;justify-content:center;padding:28px;
-      overflow:hidden;
-    }
-
-    /* floating hearts background */
-    .bg-hearts{position:fixed;inset:0;pointer-events:none;overflow:hidden}
-    .heart{position:absolute;width:56px;height:56px;background:linear-gradient(180deg,var(--accent),var(--accent-2));clip-path:path('M24 44 L12 32 C4 24 0 16 8 10 C14 4 24 6 24 6 C24 6 34 4 40 10 C48 16 44 24 36 32 L24 44 Z');opacity:0.08;filter:blur(6px)}
-
-    /* main layout */
-    .wrap{width:min(980px,95vw);max-width:1100px;display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:center}
-
-    /* album card */
-    .album{
-      position:relative;padding:28px;border-radius:24px;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.06);backdrop-filter:blur(10px) saturate(130%);box-shadow:0 20px 50px rgba(2,6,23,0.6);
-      overflow:hidden;min-height:560px;display:flex;flex-direction:column;justify-content:center;align-items:center;
-    }
-
-    .album:before{
-      content:'';position:absolute;inset:0;border-radius:24px;pointer-events:none;mix-blend-mode:overlay;background: radial-gradient(600px 200px at 10% 20%, rgba(255,122,178,0.06), transparent 10%), radial-gradient(500px 160px at 85% 80%, rgba(123,211,255,0.05), transparent 8%);
-    }
-
-    .page{
-      width:100%;max-width:720px;border-radius:18px;padding:28px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));border:1px solid rgba(255,255,255,0.04);backdrop-filter: blur(6px);box-shadow: 0 6px 20px rgba(2,6,23,0.5);
-      display:flex;gap:20px;align-items:center;transition:transform .45s cubic-bezier(.2,.9,.2,1),opacity .35s ease;position:relative;overflow:hidden
-    }
-
-    .page.enter{transform:translateY(8px) scale(.995);opacity:0}
-    .page.show{transform:none;opacity:1}
-
-    .photo{
-      flex:0 0 300px;height:300px;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.005));
-    }
-    .photo img{width:100%;height:100%;object-fit:cover;display:block}
-
-    .content{flex:1}
-    h2{margin:0 0 8px 0;font-size:24px;letter-spacing:-0.01em}
-    p.story{margin:0;font-size:16px;line-height:1.6;color:var(--muted)}
-
-    /* controls */
-    .controls{display:flex;gap:12px;margin-top:18px}
-    .btn{
-      padding:10px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text);cursor:pointer;font-weight:700;letter-spacing:0.02em;backdrop-filter: blur(6px);
-      transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
-    }
-    .btn:active{transform:translateY(2px) scale(.995)}
-    .btn:hover{box-shadow:0 6px 18px rgba(123,211,255,0.06);transform:translateY(-4px)}
-
-    .primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#041022;border:none}
-
-    /* small nav */
-    .meta{position:absolute;left:18px;top:18px;font-size:13px;color:var(--muted)}
-
-    /* sidebar */
-    .sidebar{display:flex;flex-direction:column;gap:16px}
-    .card{padding:18px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));border:1px solid rgba(255,255,255,0.04)}
-    .progress{height:12px;border-radius:999px;background:rgba(255,255,255,0.03);overflow:hidden}
-    .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));width:0%}
-
-    /* hover glass sheen */
-    .hover-sheen{position:absolute;inset:-40%;transform:rotate(25deg);background:linear-gradient(90deg, rgba(255,255,255,0.22), rgba(255,255,255,0.02));opacity:0;pointer-events:none;transition:opacity .4s ease}
-    .page:hover .hover-sheen{opacity:0.6}
-
-    /* footer text */
-    .foot{margin-top:18px;font-size:13px;color:var(--muted);text-align:center}
-
-    /* responsive */
-    @media (max-width:980px){
-      .wrap{grid-template-columns:1fr;}
-      .photo{display:none}
-      .page{padding:18px}
-    }
-
-    /* subtle heart pulse */
-    @keyframes pulse {0%{transform:scale(.98)}50%{transform:scale(1.02)}100%{transform:scale(.98)}}
-    .heart-floating{animation: floaty 8s ease-in-out infinite}
-    @keyframes floaty{0%{transform:translateY(0) rotate(0)}50%{transform:translateY(-18px) rotate(6deg)}100%{transform:translateY(0) rotate(0)}}
-
-  </style>
+  <title>Geometry Dash — Mini</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="bg-hearts" aria-hidden="true"></div>
+  <header class="top">
+    <h1>Geometry Dash — Mini</h1>
+    <div class="controls">
+      <button id="startBtn">Start</button>
+      <button id="restartBtn" disabled>Restart</button>
+      <div class="score">Score: <span id="score">0</span></div>
+    </div>
+  </header>
 
-  <div class="wrap">
-    <main class="album" role="main" aria-labelledby="title">
-      <div class="meta">Click to continue · Press Right arrow</div>
-      <h1 id="title" style="margin:0 0 14px 0;font-size:28px;text-align:center">Our Story</h1>
+  <main>
+    <canvas id="gameCanvas" width="900" height="300" aria-label="Geometry Dash mini game"></canvas>
+    <p class="hint">Tap / Click / Press Space to jump. Avoid obstacles.</p>
+  </main>
 
-      <div id="pageContainer" class="page show" tabindex="0" aria-live="polite">
-        <div class="hover-sheen"></div>
-        <div class="photo" id="photoSlot">
-          <!-- optional image -->
-          <img id="pageImage" src="" alt="" style="display:none">
-        </div>
-        <div class="content">
-          <h2 id="pageTitle">Loading...</h2>
-          <p class="story" id="pageText">—</p>
+  <footer>
+    <small>Made with ❤️ — simple HTML/CSS/JS demo</small>
+  </footer>
 
-          <div class="controls">
-            <button class="btn" id="prevBtn">⟵ Back</button>
-            <button class="btn primary" id="nextBtn">Next · Continue</button>
-            <button class="btn" id="playBtn" title="Play/Pause ambience">♪</button>
-          </div>
-
-          <div class="foot">Made with love 💖 — click anywhere on the card to continue the story.</div>
-        </div>
-      </div>
-
-    </main>
-
-    <aside class="sidebar">
-      <div class="card">
-        <h3 style="margin:0 0 8px 0">Progress</h3>
-        <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
-        <div style="height:12px"></div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted)"><span id="pageCount">0</span><span id="totalCount">0</span></div>
-      </div>
-
-      <div class="card" id="tocCard">
-        <h3 style="margin:0 0 8px 0">Chapters</h3>
-        <div id="tocList" style="display:flex;flex-direction:column;gap:8px"></div>
-      </div>
-
-      <div class="card">
-        <h3 style="margin:0 0 8px 0">Settings</h3>
-        <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="showHearts" checked> Floating hearts</label>
-        <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin-top:8px"><input type="checkbox" id="autoAdvance"> Auto-advance (3s)</label>
-      </div>
-    </aside>
-  </div>
-
-  <script>
-    /* ---------- Story pages: edit these to add your memories ---------- */
-    const PAGES = [
-      {title:'How We Met', text:"Do you remember that rainy evening when you held the umbrella for me? I thought: here's someone kind. From that tiny moment, everything began to feel warmer.", image:''},
-      {title:'First Date', text:"We shared cheap noodles and dreams. I laughed at your jokes and you said my laughter sounded like music. I still keep that day in my pocket.", image:''},
-      {title:'Silly Fights', text:"We argued about who left the light on, but we always made up with stupid dances and soft apologies. I love you for choosing to stay.", image:''},
-      {title:'Adventures', text:"From small trips to late-night games, every adventure with you became my favorite. Thank you for being my co-pilot.", image:''},
-      {title:'Today', text:"This little album is for you. Click through — each page is a tiny story, and at the end I have a surprise. 💖", image:''},
-      {title:'Surprise', text:"I love you. Want to go on another date tonight?", image:''}
-    ];
-
-    /* ---------- App state ---------- */
-    let idx = 0;
-    const total = PAGES.length;
-    const container = document.getElementById('pageContainer');
-    const pageTitle = document.getElementById('pageTitle');
-    const pageText = document.getElementById('pageText');
-    const pageImage = document.getElementById('pageImage');
-    const photoSlot = document.getElementById('photoSlot');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const playBtn = document.getElementById('playBtn');
-    const pageCount = document.getElementById('pageCount');
-    const totalCount = document.getElementById('totalCount');
-    const progressBar = document.getElementById('progressBar');
-    const tocList = document.getElementById('tocList');
-    const showHearts = document.getElementById('showHearts');
-    const autoAdvance = document.getElementById('autoAdvance');
-
-    totalCount.textContent = total;
-
-    /* render TOC */
-    function buildTOC(){
-      tocList.innerHTML='';
-      PAGES.forEach((p,i)=>{
-        const btn = document.createElement('button');
-        btn.className='btn'; btn.style.textAlign='left'; btn.textContent = `${i+1}. ${p.title}`;
-        btn.addEventListener('click',()=>goTo(i));
-        tocList.appendChild(btn);
-      });
-    }
-    buildTOC();
-
-    function render(){
-      const page = PAGES[idx];
-      container.classList.remove('show');
-      container.classList.add('enter');
-      setTimeout(()=>{
-        pageTitle.textContent = page.title;
-        pageText.textContent = page.text;
-        if (page.image){ pageImage.src = page.image; pageImage.style.display='block'; } else { pageImage.style.display='none'; }
-        container.classList.remove('enter'); container.classList.add('show');
-      },160);
-
-      pageCount.textContent = idx+1;
-      const pct = Math.round(((idx+1)/total)*100);
-      progressBar.style.width = pct + '%';
-
-      // update buttons
-      prevBtn.disabled = idx===0; nextBtn.disabled = idx===total-1;
-      if (idx===total-1){ nextBtn.textContent = 'Finish ❤️'; }
-      else { nextBtn.textContent = 'Next · Continue'; }
-
-      // small chime
-      playChime();
-    }
-
-    function goTo(i){ idx = Math.max(0, Math.min(total-1, i)); render(); }
-
-    prevBtn.addEventListener('click',()=>{ goTo(idx-1); });
-    nextBtn.addEventListener('click',()=>{ if (idx<total-1) goTo(idx+1); else surprise(); });
-
-    // click anywhere on the card to continue
-    container.addEventListener('click',(e)=>{
-      // avoid clicking controls
-      if (e.target.closest('.controls')) return;
-      if (idx<total-1) goTo(idx+1); else surprise();
-    });
-
-    // keyboard nav
-    window.addEventListener('keydown',(e)=>{
-      if (e.key==='ArrowRight' || e.key===' ') { e.preventDefault(); if (idx<total-1) goTo(idx+1); else surprise(); }
-      if (e.key==='ArrowLeft') { e.preventDefault(); goTo(idx-1); }
-    });
-
-    /* ---------- Auto-advance option ---------- */
-    let autoTimer = null;
-    autoAdvance.addEventListener('change',()=>{
-      if (autoAdvance.checked) startAuto(); else stopAuto();
-    });
-    function startAuto(){ stopAuto(); autoTimer = setInterval(()=>{ if (idx<total-1) goTo(idx+1); else { stopAuto(); surprise(); } },3000); }
-    function stopAuto(){ if (autoTimer) clearInterval(autoTimer); autoTimer=null }
-
-    /* ---------- Ambient audio (simple generated pad) ---------- */
-    let audioCtx=null; let padNode=null; let playing=false;
-    function initAudio(){ if (audioCtx) return; audioCtx = new (window.AudioContext||window.webkitAudioContext)(); padNode = audioCtx.createOscillator(); const gain = audioCtx.createGain(); padNode.type='sine'; padNode.frequency.value = 220; gain.gain.value=0.0012; padNode.connect(gain); gain.connect(audioCtx.destination); padNode.start(); padNode._gain = gain; }
-    function toggleAudio(){ if (!audioCtx) initAudio(); if (!playing){ padNode._gain.gain.linearRampToValueAtTime(0.02, audioCtx.currentTime+0.8); playing=true; playBtn.textContent='♪♫'; } else { padNode._gain.gain.linearRampToValueAtTime(0.0008, audioCtx.currentTime+0.6); playing=false; playBtn.textContent='♪'; } }
-    playBtn.addEventListener('click',()=>{ toggleAudio(); });
-
-    /* quick chime on page change */
-    function playChime(){ try{ const ctx = new (window.AudioContext||window.webkitAudioContext)(); const o = ctx.createOscillator(); const g = ctx.createGain(); o.type='sine'; o.frequency.value = 880; g.gain.value=0.0001; o.connect(g); g.connect(ctx.destination); o.start(); g.gain.exponentialRampToValueAtTime(0.02, ctx.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime+0.5); setTimeout(()=>{ o.stop(); ctx.close(); },700);}catch(e){}
-    }
-
-    /* ---------- Floating hearts rendering ---------- */
-    const bg = document.querySelector('.bg-hearts');
-    const hearts = [];
-    function createHearts(){
-      bg.innerHTML=''; hearts.length=0; if (!showHearts.checked) return;
-      for (let i=0;i<12;i++){
-        const el = document.createElement('div'); el.className='heart heart-floating';
-        const size = 24 + Math.random()*64; el.style.width = size+'px'; el.style.height = size+'px';
-        el.style.left = (Math.random()*110 - 5)+'%'; el.style.top = (Math.random()*120 - 10)+'%';
-        el.style.opacity = 0.04 + Math.random()*0.08; el.style.transform = `translateY(0)`; bg.appendChild(el); hearts.push(el);
-      }
-    }
-    showHearts.addEventListener('change',createHearts);
-    createHearts();
-
-    /* ---------- Surprise action ---------- */
-    function surprise(){
-      // little confetti hearts burst and message
-      for (let i=0;i<25;i++){
-        const h = document.createElement('div'); h.className='heart'; h.style.width='18px'; h.style.height='18px'; h.style.opacity='1';
-        h.style.left = (50 + (Math.random()-0.5)*30) + '%'; h.style.top = (45 + (Math.random()-0.5)*8) + '%'; h.style.transition='transform 900ms cubic-bezier(.2,.9,.2,1), opacity 900ms ease-out';
-        document.body.appendChild(h);
-        requestAnimationFrame(()=>{ h.style.transform = `translate(${(Math.random()-0.5)*200}px,${-200 - Math.random()*200}px) rotate(${Math.random()*380-190}deg)`; h.style.opacity=0; });
-        setTimeout(()=>h.remove(),1100);
-      }
-      // final message overlay
-      const overlay = document.createElement('div'); overlay.style.position='fixed'; overlay.style.inset=0; overlay.style.display='grid'; overlay.style.placeItems='center'; overlay.style.background='linear-gradient(180deg, rgba(2,6,23,0.6), rgba(2,6,23,0.86))'; overlay.style.zIndex=9999;
-      overlay.innerHTML = `<div style="max-width:720px;padding:28px;border-radius:18px;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.06);text-align:center;color:var(--text)"><h2 style=\"margin:0 0 12px 0\">A little surprise</h2><p style=\"margin:0 0 18px 0;color:var(--muted)\">I love you more than all the stars. 💖 Will you be my date tonight?</p><div style=\"display:flex;gap:12px;justify-content:center\"><button id=\"yesBtn\" class=\"btn primary\">Yes!</button><button id=\"noBtn\" class=\"btn\">Maybe later</button></div></div>`;
-      document.body.appendChild(overlay);
-      document.getElementById('yesBtn').addEventListener('click',()=>{ overlay.remove(); alert('Yay! I'm so happy 💖'); });
-      document.getElementById('noBtn').addEventListener('click',()=>{ overlay.remove(); });
-    }
-
-    /* ---------- init ---------- */
-    function init(){ render(); // seed hearts
-      // create small toc highlights
-      document.querySelectorAll('#tocList .btn').forEach((b, i)=>{ b.addEventListener('click',()=>{ goTo(i); }); });
-
-      // small animation: pulse album once
-      document.querySelector('.album').animate([{transform:'scale(0.996)'},{transform:'scale(1)'}],{duration:520,fill:'forwards'});
-    }
-    init();
-
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
+
+
+
+/* ==========================
+styles.css
+========================== */
+/* Paste this into a separate file named styles.css */
+:root{
+  --bg:#0b1220;
+  --panel:#0f1724;
+  --accent:#00d1ff;
+  --muted:#9aa7b2;
+}
+*{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
+html,body{height:100%;margin:0}
+body{background:linear-gradient(180deg,var(--bg),#07101a);color:#e6f4fb;display:flex;flex-direction:column;align-items:center}
+.top{width:100%;max-width:960px;padding:16px;display:flex;justify-content:space-between;align-items:center}
+h1{font-size:1rem;margin:0}
+.controls{display:flex;gap:8px;align-items:center}
+button{background:var(--panel);border:1px solid rgba(255,255,255,0.05);padding:8px 12px;border-radius:8px;color:var(--accent);cursor:pointer}
+button:disabled{opacity:0.4;cursor:not-allowed}
+.score{font-size:0.95rem;color:var(--muted)}
+main{display:flex;flex-direction:column;align-items:center;gap:8px}
+canvas{background:linear-gradient(180deg,#071827,#0d1f2c);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.6);max-width:96%;height:auto}
+.hint{color:var(--muted);font-size:0.85rem}
+footer{margin:18px;color:var(--muted)}
+
+/* Responsive */
+@media (max-width:600px){
+  canvas{width:95%}
+}
+
+
+
+/* ==========================
+script.js
+========================== */
+/* Paste this into a separate file named script.js */
+
+// Simple Geometry Dash-like one-button runner
+(() => {
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const startBtn = document.getElementById('startBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const scoreEl = document.getElementById('score');
+
+  const W = canvas.width;
+  const H = canvas.height;
+
+  // Game state
+  let running = false;
+  let lastTime = 0;
+  let score = 0;
+  let speed = 4;
+
+  // Player
+  const player = {
+    x: 80,
+    y: H - 50,
+    w: 30,
+    h: 30,
+    vy: 0,
+    gravity: 0.8,
+    jumpPower: -14,
+    onGround: true,
+  };
+
+  // Obstacles
+  const obstacles = [];
+  let spawnTimer = 0;
+  const spawnInterval = 1200; // ms
+
+  function reset() {
+    running = false;
+    score = 0;
+    speed = 4;
+    obstacles.length = 0;
+    spawnTimer = 0;
+    player.y = H - player.h - 20;
+    player.vy = 0;
+    player.onGround = true;
+    scoreEl.textContent = score;
+    restartBtn.disabled = true;
+  }
+
+  function start() {
+    reset();
+    running = true;
+    lastTime = performance.now();
+    requestAnimationFrame(loop);
+    restartBtn.disabled = false;
+  }
+
+  function gameOver() {
+    running = false;
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#fff';
+    ctx.font = '28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Game Over', W / 2, H / 2 - 10);
+    ctx.font = '16px sans-serif';
+    ctx.fillText('Press Restart to try again', W / 2, H / 2 + 20);
+  }
+
+  function spawnObstacle() {
+    const h = 20 + Math.random() * 40;
+    const w = 20 + Math.random() * 40;
+    obstacles.push({x: W + 20, y: H - h - 20, w, h});
+  }
+
+  function update(dt) {
+    // increase difficulty over time
+    speed += dt * 0.0008; // slightly increase speed
+
+    // spawn obstacles
+    spawnTimer += dt;
+    if (spawnTimer > spawnInterval) {
+      spawnTimer = 0;
+      spawnObstacle();
+    }
+
+    // player physics
+    player.vy += player.gravity;
+    player.y += player.vy;
+    if (player.y + player.h >= H - 20) {
+      player.y = H - player.h - 20;
+      player.vy = 0;
+      player.onGround = true;
+    } else {
+      player.onGround = false;
+    }
+
+    // move obstacles
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+      const ob = obstacles[i];
+      ob.x -= speed;
+      if (ob.x + ob.w < -50) obstacles.splice(i, 1);
+
+      // collision detection AABB
+      if (
+        player.x < ob.x + ob.w &&
+        player.x + player.w > ob.x &&
+        player.y < ob.y + ob.h &&
+        player.y + player.h > ob.y
+      ) {
+        gameOver();
+      }
+    }
+
+    // scoring
+    score += dt * 0.01;
+    scoreEl.textContent = Math.floor(score);
+  }
+
+  function draw() {
+    // background
+    ctx.clearRect(0, 0, W, H);
+
+    // ground
+    ctx.fillStyle = '#0a4860';
+    ctx.fillRect(0, H - 20, W, 20);
+
+    // player
+    ctx.fillStyle = '#00d1ff';
+    roundRect(ctx, player.x, player.y, player.w, player.h, 6, true, false);
+
+    // obstacles
+    ctx.fillStyle = '#ff6b6b';
+    for (const ob of obstacles) {
+      roundRect(ctx, ob.x, ob.y, ob.w, ob.h, 4, true, false);
+    }
+
+    // HUD
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.fillRect(10, 10, 120, 28);
+    ctx.fillStyle = '#fff';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Score: ' + Math.floor(score), 18, 30);
+  }
+
+  function loop(now) {
+    if (!running) return;
+    const dt = now - lastTime;
+    lastTime = now;
+    update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  // helpers
+  function roundRect(ctx, x, y, w, h, r) {
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // input
+  function jump() {
+    if (!running) return;
+    if (player.onGround) {
+      player.vy = player.jumpPower;
+      player.onGround = false;
+    }
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      jump();
+    }
+  });
+
+  canvas.addEventListener('click', jump);
+  canvas.addEventListener('touchstart', (e) => { e.preventDefault(); jump(); }, {passive:false});
+
+  startBtn.addEventListener('click', () => start());
+  restartBtn.addEventListener('click', () => start());
+
+  // Initialize
+  reset();
+
+})();
